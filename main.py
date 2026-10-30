@@ -1016,4 +1016,4 @@ if __name__=='__main__':
             epd.large_text("%dW" % power, left_margin, top_margin+scale*10, scale, 0x00)
         epd.display(epd.buffer)
         epd.sleep()
-        epd.delay_ms(180 * 1000)
+        epd.delay_ms(300 * 1000)
