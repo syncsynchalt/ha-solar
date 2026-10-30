@@ -30,6 +30,8 @@
 from machine import Pin, SPI
 import framebuf
 import utime
+import network
+import requests
 
 WF_PARTIAL_2IN13_V3= [
     0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
@@ -911,16 +913,23 @@ img1 = bytes([
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
 ])
 
-def flip_byte(b: int) -> int:
-    b = (((b&1) << 7) |
-        ((b&2) << 5) |
-        ((b&4) << 3) |
-        ((b&8) << 1) |
-        ((b&16) >> 1) |
-        ((b&32) >> 3) |
-        ((b&64) >> 5) |
-        ((b&128) >> 7))
-    return b
+
+def connect():
+    ssid = 'Gunby-Modem'
+    password = 'bowiedog'
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(ssid, password)
+    while not wlan.isconnected():
+        utime.sleep(1)
+    print('Wifi IP: %s' % wlan.ifconfig()[0])
+    try:
+        print('Trying HTTP request')
+        requests.get('http://crafty.local:8080/alive.txt', timeout=0.5)
+    except:
+        pass
+
+
 
 def flip_row(row: bytes) -> list:
     ''' flip the bit order, also rotate the first six bits to the end '''
@@ -947,6 +956,7 @@ def hflip(h: int, w: int, bin: bytes) -> bytes:
 
 
 if __name__=='__main__':
+    connect()
     epd = EPD_2in13_V3()
 
     for i in range(3):
