@@ -12,3 +12,7 @@ cp RPI_PICO2_W-20260824-v1.29.0.uf2 /Volumes/RP2350/
 ## Specs
 
 Panel specs: https://files.waveshare.com/upload/5/59/2.13inch_e-Paper_V3_Specificition.pdf
+
+Original source: https://github.com/waveshareteam/Pico_ePaper_Code/blob/main/python/Pico_ePaper-2.13_V3.py
+
+See also: https://github.com/cdjq/DFRobot_RPi_Display_V3
