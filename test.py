@@ -106,8 +106,10 @@ class EPD_2in13_V3(framebuf.FrameBuffer):
         self.dc_pin = Pin(DC_PIN, Pin.OUT)
 
         self.buffer = bytearray(self.height * self.width // 8)
-        super().__init__(self.buffer, self.width, self.height,
-                         framebuf.MONO_VLSB if self.landscape else framebuf.MONO_HLSB)
+        if landscape:
+            super().__init__(self.buffer, self.height, self.width, framebuf.MONO_VLSB)
+        else:
+            super().__init__(self.buffer, self.width, self.height, framebuf.MONO_HLSB)
         self.init()
 
     '''
@@ -962,7 +964,21 @@ def hflip(h: int, w: int, bin: bytes) -> bytes:
     return bytes(out)
 
 
-if __name__=='__main__':
+def get_solar_power() -> float:
+    tok = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyNWRkZDgzMzd" +
+           "lYzA0M2ZhODdiZDE3ODViN2JmMTdjMiIsImlhdCI6MTc5MzM3NjE1MiwiZXh" +
+           "wIjoyMTA4NzM2MTUyfQ.iwV142R2HtLuV5914JzMH3Dg4Ey7x0-vSbqe9gqsZr0")
+    req = requests.get('http://homeassistant.local/api/states/sensor.solar_power',
+                        headers = {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer %s' % tok
+                        })
+    data = req.json()
+    print('solar: %d' % float(data['state']))
+    return float(data['state'])
+
+
+if __name__=='xxx__main__':
     connect()
     epd = EPD_2in13_V3()
 
@@ -986,3 +1002,17 @@ if __name__=='__main__':
         epd.sleep()
         epd.delay_ms(3000)
 
+
+if __name__=='__main__':
+    connect()
+    power = int(get_solar_power())
+    epd = EPD_2in13_V3(landscape=True)
+
+    while True:
+        epd.init()
+        epd.fill(0xff)
+        epd.text("Solar", 0, 10, 0x00)
+        epd.text("%d W" % power, 0, 20, 0x00)
+        epd.display(epd.buffer)
+        epd.sleep()
+        epd.delay_ms(180 * 1000)
