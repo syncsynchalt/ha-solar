@@ -930,6 +930,13 @@ def connect():
         pass
 
 
+def bitflip(img: bytes) -> bytes:
+    ''' flip white / black pixels '''
+    out: list[int] = []
+    for b in img:
+        out.append(b ^ 0xff)
+    return bytes(out)
+
 
 def flip_row(row: bytes) -> list:
     ''' flip the bit order, also rotate the first six bits to the end '''
@@ -963,15 +970,19 @@ if __name__=='__main__':
         print('init 1')
         epd.init()
         white: list[byte] = []
-        for i in range(4000):
+        for _ in range(4000):
             white.append(0xff)
         epd.Display_Base(bytes(white))
-        epd.display_Partial(hflip(epd.height, epd.width, img1))
+        img = img1
+        epd.display_Partial(hflip(epd.height, epd.width,
+                                  bitflip(img) if (i % 2 == 1) else img))
         print('displayed img1')
-        epd.delay_ms(3000)
+        epd.delay_ms(1500)
 
-        epd.display_Partial(hflip(epd.height, epd.width, basemap))
+        img = basemap
+        epd.display_Partial(hflip(epd.height, epd.width,
+                                  bitflip(img) if (i % 2 == 1) else img))
         print('displayed basemap')
         epd.sleep()
-        epd.delay_ms(8000)
+        epd.delay_ms(3000)
 
