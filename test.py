@@ -83,8 +83,9 @@ DC_PIN          = 8
 CS_PIN          = 9
 BUSY_PIN        = 13
 
-class EPD_2in13_V3_Portrait(framebuf.FrameBuffer):
-    def __init__(self):
+class EPD_2in13_V3(framebuf.FrameBuffer):
+    def __init__(self, landscape=False):
+        self.landscape = landscape
         self.reset_pin = Pin(RST_PIN, Pin.OUT)
 
         self.busy_pin = Pin(BUSY_PIN, Pin.IN, Pin.PULL_UP)
@@ -103,7 +104,8 @@ class EPD_2in13_V3_Portrait(framebuf.FrameBuffer):
         self.dc_pin = Pin(DC_PIN, Pin.OUT)
 
         self.buffer = bytearray(self.height * self.width // 8)
-        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_HLSB)
+        super().__init__(self.buffer, self.width, self.height,
+                         framebuf.MONO_VLSB if self.landscape else framebuf.MONO_HLSB)
         self.init()
 
     '''
@@ -291,7 +293,7 @@ class EPD_2in13_V3_Portrait(framebuf.FrameBuffer):
         self.send_data(0x00)
 
         self.send_command(0x11)  #data entry mode
-        self.send_data(0x03)
+        self.send_data(0x07 if self.landscape else 0x03)
 
         self.SetWindows(0, 0, self.width-1, self.height-1)
         self.SetCursor(0, 0)
@@ -313,9 +315,9 @@ class EPD_2in13_V3_Portrait(framebuf.FrameBuffer):
     function : Clear screen
     parameter:
     '''
-    def Clear(self):
+    def Clear(self, color: int = 0xff):
         self.send_command(0x24)
-        self.send_data1([0xff] * self.height * int(self.width / 8))
+        self.send_data1([color] * self.height * int(self.width / 8))
 
         self.TurnOnDisplay()
 
@@ -326,7 +328,13 @@ class EPD_2in13_V3_Portrait(framebuf.FrameBuffer):
     '''
     def display(self, image):
         self.send_command(0x24)
-        self.send_data1(image)
+
+        if self.landscape:
+            for j in range(int(self.width / 8) - 1, -1, -1):
+                for i in range(0, self.height):
+                    self.send_data(image[i + j * self.height])
+        else:
+            self.send_data1(image)
 
         self.TurnOnDisplay()
 
@@ -903,44 +911,6 @@ img1 = bytes([
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
 ])
 
-# if __name__=='__main__':
-#    epd = EPD_2in13_V3_Portrait()
-    # epd.Clear()
-    #
-    # epd.fill(0xff)
-    # epd.text("Waveshare", 0, 10, 0x00)
-    # epd.text("ePaper-2.13_V3", 0, 30, 0x00)
-    # epd.text("Raspberry Pico", 0, 50, 0x00)
-    # epd.text("Hello World", 0, 70, 0x00)
-    # epd.display(epd.buffer)
-    # epd.delay_ms(2000)
-    #
-    # epd.vline(10, 90, 60, 0x00)
-    # epd.vline(90, 90, 60, 0x00)
-    # epd.hline(10, 90, 80, 0x00)
-    # epd.hline(10, 150, 80, 0x00)
-    # epd.line(10, 90, 90, 150, 0x00)
-    # epd.line(90, 90, 10, 150, 0x00)
-    # epd.display(epd.buffer)
-    # epd.delay_ms(2000)
-    #
-    # epd.rect(10, 180, 50, 40, 0x00)
-    # epd.fill_rect(60, 180, 50, 40, 0x00)
-    # epd.Display_Base(epd.buffer)
-    # epd.delay_ms(2000)
-    #
-    # epd.init()
-    # for i in range(0, 10):
-    #     epd.fill_rect(40, 230, 40, 10, 0xff)
-    #     epd.text(str(i), 60, 230, 0x00)
-    #     epd.display_Partial(epd.buffer)
-    #
-    # print("sleep")
-    # epd.init()
-    # epd.Clear()
-    # epd.delay_ms(2000)
-    # epd.sleep()
-
 def flip_byte(b: int) -> int:
     b = (((b&1) << 7) |
         ((b&2) << 5) |
@@ -977,7 +947,7 @@ def hflip(h: int, w: int, bin: bytes) -> bytes:
 
 
 if __name__=='__main__':
-    epd = EPD_2in13_V3_Portrait()
+    epd = EPD_2in13_V3()
 
     for i in range(3):
         print('init 1')
