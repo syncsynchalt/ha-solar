@@ -1,13 +1,4 @@
 # *****************************************************************************
-# * | File        :   Pico_ePaper-2.13_V3.py
-# * | Author      :   Waveshare team
-# * | Function    :   Electronic paper driver
-# * | Info        :
-# *----------------
-# * | This version:   V1.0
-# * | Date        :   2021-11-01
-# # | Info        :   python demo
-# -----------------------------------------------------------------------------
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -28,7 +19,7 @@
 #
 
 from machine import Pin, SPI
-import framebuf
+import framebuf2
 import utime
 import network
 import requests
@@ -85,7 +76,7 @@ DC_PIN          = 8
 CS_PIN          = 9
 BUSY_PIN        = 13
 
-class EPD_2in13_V3(framebuf.FrameBuffer):
+class EPD_2in13_V3(framebuf2.FrameBuffer):
     def __init__(self, landscape=False):
         self.landscape = landscape
         self.reset_pin = Pin(RST_PIN, Pin.OUT)
@@ -107,9 +98,9 @@ class EPD_2in13_V3(framebuf.FrameBuffer):
 
         self.buffer = bytearray(self.height * self.width // 8)
         if landscape:
-            super().__init__(self.buffer, self.height, self.width, framebuf.MONO_VLSB)
+            super().__init__(self.buffer, self.height, self.width, framebuf2.MONO_VLSB)
         else:
-            super().__init__(self.buffer, self.width, self.height, framebuf.MONO_HLSB)
+            super().__init__(self.buffer, self.width, self.height, framebuf2.MONO_HLSB)
         self.init()
 
     '''
@@ -1005,14 +996,24 @@ if __name__=='xxx__main__':
 
 if __name__=='__main__':
     connect()
-    power = int(get_solar_power())
     epd = EPD_2in13_V3(landscape=True)
 
     while True:
+        try:
+            power = int(get_solar_power())
+        except:
+            print("Can't get power info, skipping")
+            power = None
         epd.init()
         epd.fill(0xff)
-        epd.text("Solar", 0, 10, 0x00)
-        epd.text("%d W" % power, 0, 20, 0x00)
+        left_margin = 20
+        top_margin = 20
+        scale = 5
+        epd.large_text("Solar", left_margin, top_margin, scale, 0x00)
+        if power == None:
+            tpd.large_text("error", left_margin, top_margin+scale*10, scale, 0x00)
+        else:
+            epd.large_text("%dW" % power, left_margin, top_margin+scale*10, scale, 0x00)
         epd.display(epd.buffer)
         epd.sleep()
         epd.delay_ms(180 * 1000)
