@@ -570,7 +570,7 @@ def show_power(power: int):
             top_margin = 24
             scale = 3
         else:
-            left_margin = 96
+            left_margin = 100
             top_margin = 20
             scale = 4
         epd.large_text("%dW" % power, left_margin, top_margin+35, scale, 0x00)
