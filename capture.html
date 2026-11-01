@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<style>
+canvas {
+    border: 2px solid black;
+    width: 250px;
+    height: 120px;
+}
+
+div {
+    margin: 10px;
+}
+</style>
+
+<div>
+<input type="text" id="inp" />
+</div>
+
+<div>
+<canvas id="canvas" width="250" height="122">
+</canvas>
+</div>
+
+<div>
+<img style="display: none" src="/image.svg" id="image"/>
+<p id="w"></p>
+<p id="h"></p>
+<p id="code">
+</p>
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const img = document.getElementById("image");
+const input = document.getElementById("inp");
+
+let capture = (x, y, w, h) => {
+    let result = "[ ";
+    let bw = 0;
+    let bit = 0;
+    let byte = 0;
+    let data = ctx.getImageData(x, y, w, h).data;
+    // data is a 1-d array of the pixels as 8-bit RGBA tuples
+    for (let i = 0; i < data.length; i+=4) {
+        bw = ((data[i] < 128 && data[i+3] < 127) ? 1 : 0);
+        byte = byte | (bw << (7-bit));
+        bit++;
+        if (bit >= 8 || (i+1 >= data.length)) {
+            result += "0x" + byte.toString(16) + ", ";
+            bit = 0;
+            byte = 0;
+        }
+    }
+    if (result.endsWith(", ")) {
+        result = result.substring(0, result.length - 2) + "]";
+    }
+
+    document.getElementById("w").innerHTML = "w=" + w;
+    document.getElementById("h").innerHTML = "h=" + h;
+    document.getElementById("code").innerHTML = result;
+
+    ctx.strokeStyle = "1px black";
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.stroke();
+}
+
+img.addEventListener("load", (e) => {
+    ctx.drawImage(img, 0, 13, 96, 96);
+    capture(0, 13, 96, 96);
+});
+
+input.addEventListener("keyup", (e) => {
+    ctx.reset();
+    ctx.font = "52px monospace";
+    ctx.fillText(input.value, 5, 48);
+    capture(4, 6, 32*input.value.length, 48);
+});
+
+</script>

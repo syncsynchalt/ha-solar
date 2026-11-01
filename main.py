@@ -3,7 +3,7 @@ import utime
 import network
 import requests
 import random
-from images import sun, moon
+import images
 from display import EPD_2in13_V3
 
 
@@ -74,13 +74,19 @@ def sun_above_horizon() -> bool:
 def show_power(power: int):
     try:
         epd.fill(0xff)
-        draw_image(sun, 0, 18, 96, 96)
+        draw_image(images.sun, 0, 18, images.sun_w, images.sun_h)
 
         left_margin = 100
-        top_margin = 38
-        scale = 4
-        epd.large_text("%d" % power, left_margin, top_margin, scale, 0x00)
-        epd.large_text("Watts", left_margin, top_margin + scale*10, scale-1, 0x00)
+        top = 25
+        left = left_margin
+        for digit in list(str(power)):
+            draw_image(images.digits[int(digit)], left, top, images.digits_w, images.digits_h)
+            left += images.digits_w
+
+        top += images.digits_h
+        left = left_margin
+        draw_image(images.watts, left + 3, top, images.watts_w, images.watts_h)
+
         epd.display(epd.buffer)
     except Exception as e:
         print("Exception", e)
@@ -90,7 +96,7 @@ def show_power(power: int):
 def show_night():
     epd.fill(0xff)
     left = 0 + random.randint(0, 153)
-    draw_image(moon, left, 18, 96, 96)
+    draw_image(images.moon, left, 18, images.moon_w, images.moon_h)
     epd.display(epd.buffer)
 
 
