@@ -76,7 +76,7 @@ def show_power(power: int):
         epd.fill(0xff)
         draw_image(images.sun, 0, 18, images.sun_w, images.sun_h)
 
-        left_margin = 100
+        left_margin = 110
         top = 25
         left = left_margin
         for digit in list(str(power)):
