@@ -565,15 +565,11 @@ def show_power(power: int):
         epd.fill(0xff)
         draw_image(sun, 0, 18, 96, 96)
 
-        if power > 1000:
-            left_margin = 96
-            top_margin = 24
-            scale = 3
-        else:
-            left_margin = 100
-            top_margin = 20
-            scale = 4
-        epd.large_text("%dW" % power, left_margin, top_margin+35, scale, 0x00)
+        left_margin = 100
+        top_margin = 38
+        scale = 4
+        epd.large_text("%d" % power, left_margin, top_margin, scale, 0x00)
+        epd.large_text("Watts", left_margin, top_margin + scale*10, scale-1, 0x00)
         epd.display(epd.buffer)
     except Exception as e:
         print("Exception", e)
