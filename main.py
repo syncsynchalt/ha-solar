@@ -4,6 +4,7 @@ import network
 import requests
 import random
 import images
+import secrets
 from display import EPD_2in13_V3
 
 
@@ -25,8 +26,8 @@ def display_line(text: str, size: int = 3):
 
 
 def connect() -> str:
-    ssid = 'Gunby-Modem'
-    password = 'bowiedog'
+    ssid = secrets.wifi_ssid
+    password = secrets.wifi_pass
     if wlan.isconnected():
         return wlan.ifconfig()[0]
 
@@ -49,9 +50,7 @@ def connect() -> str:
 
 
 def get_sensor_state(sensor: str) -> str:
-    tok = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyNWRkZDgzMzd" +
-           "lYzA0M2ZhODdiZDE3ODViN2JmMTdjMiIsImlhdCI6MTc5MzM3NjE1MiwiZXh" +
-           "wIjoyMTA4NzM2MTUyfQ.iwV142R2HtLuV5914JzMH3Dg4Ey7x0-vSbqe9gqsZr0")
+    tok = secrets.auth_tok
     req = requests.get('http://homeassistant.local/api/states/%s' % sensor,
                         headers = {
                             'Content-Type': 'application/json',
